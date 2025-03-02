@@ -1,7 +1,7 @@
 {
     "name": "قائمة مشترياتي",
     "short_name": "مشترياتي",
-    "start_url": ".",
+    "start_url": "/shopping-list/",
     "display": "standalone",
     "background_color": "#f5f5f5",
     "theme_color": "#4CAF50",
