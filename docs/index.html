@@ -15,12 +15,16 @@
   <title>قائمة مشترياتي</title>
   <link rel="manifest" href="manifest.json">
 
+  <script>
+    const serviceWorkerVersion = "2027128856";
+  </script>
   <script src="flutter.js" defer></script>
   <style>
     body {
       background-color: #f5f5f5;
       margin: 0;
       padding: 0;
+      overscroll-behavior: none;
     }
     .loading {
       display: flex;
@@ -35,6 +39,12 @@
       width: 100px;
       height: 100px;
       margin-bottom: 20px;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+      100% { transform: scale(1); }
     }
   </style>
 </head>
@@ -45,15 +55,33 @@
   </div>
   <script>
     window.addEventListener('load', function() {
-      _flutter.loader.loadEntrypoint({
-        serviceWorker: {
-          serviceWorkerVersion: null,
+      var loading = document.querySelector('.loading');
+      var loadingText = loading.querySelector('span');
+      var dots = '';
+      var loadingInterval = setInterval(function() {
+        dots = dots.length >= 3 ? '' : dots + '.';
+        loadingText.textContent = 'جاري التحميل' + dots;
+      }, 500);
+
+      window._flutter = {
+        loader: {
+          load: async function() {
+            try {
+              const engineInitializer = await import('./flutter.js');
+              const appRunner = await engineInitializer.initializeEngine({
+                renderer: 'html'
+              });
+              await appRunner.runApp();
+            } catch (e) {
+              console.error('Error loading Flutter app:', e);
+              loadingText.textContent = 'حدث خطأ في التحميل. يرجى تحديث الصفحة.';
+            }
+            clearInterval(loadingInterval);
+          }
         }
-      }).then(function(engineInitializer) {
-        return engineInitializer.initializeEngine();
-      }).then(function(appRunner) {
-        return appRunner.runApp();
-      });
+      };
+      
+      window._flutter.loader.load();
     });
   </script>
 </body>
