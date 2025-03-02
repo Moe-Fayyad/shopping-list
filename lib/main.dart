@@ -63,12 +63,46 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
     isDark = WidgetsBinding.instance.window.platformBrightness == Brightness.dark;
   }
 
+  Future<void> _showClearConfirmation() async {
+    return showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('تأكيد الإفراغ'),
+        content: Text('هل أنت متأكد من إفراغ القائمة؟'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text('إلغاء'),
+          ),
+          TextButton(
+            onPressed: () {
+              setState(() {
+                items.clear();
+              });
+              Navigator.of(context).pop();
+            },
+            child: Text('نعم، إفراغ القائمة'),
+            style: TextButton.styleFrom(
+              foregroundColor: Colors.red,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('قائمة مشترياتي'),
         actions: [
+          if (items.isNotEmpty)
+            IconButton(
+              icon: const Icon(Icons.delete_sweep),
+              onPressed: _showClearConfirmation,
+              tooltip: 'إفراغ القائمة',
+            ),
           IconButton(
             icon: Icon(isDark ? Icons.light_mode : Icons.dark_mode),
             onPressed: () {
