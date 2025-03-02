@@ -1,44 +1,23 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <!--
-    If you are serving your web app in a path other than the root, change the
-    href value below to reflect the base path you are serving from.
-
-    The path provided below has to start and end with a slash "/" in order for
-    it to work correctly.
-
-    For more details:
-    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
-
-    This is a placeholder for base href that will be replaced by the value of
-    the `--base-href` argument provided to `flutter build`.
-  -->
   <base href="$FLUTTER_BASE_HREF">
-
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
   <meta name="description" content="قائمة مشترياتي - تطبيق لإدارة قوائم التسوق">
-
-  <!-- iOS meta tags & icons -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
   <meta name="apple-mobile-web-app-title" content="قائمة مشترياتي">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
-
-  <!-- Favicon -->
   <link rel="icon" type="image/png" href="favicon.png"/>
-
   <title>قائمة مشترياتي</title>
   <link rel="manifest" href="manifest.json">
 
   <script>
-    // The value below is injected by flutter build, do not touch.
-    const serviceWorkerVersion = null;
+    var serviceWorkerVersion = null;
   </script>
-  <!-- This script adds the flutter initialization JS code -->
   <script src="flutter.js" defer></script>
   <style>
     body {
@@ -54,11 +33,18 @@
       height: 100vh;
       font-family: Arial, sans-serif;
       color: #4CAF50;
+      flex-direction: column;
     }
     .loading img {
-      width: 50px;
-      height: 50px;
-      margin-right: 10px;
+      width: 100px;
+      height: 100px;
+      margin-bottom: 20px;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+      100% { transform: scale(1); }
     }
   </style>
 </head>
@@ -68,18 +54,34 @@
     <span>جاري التحميل...</span>
   </div>
   <script>
-    window.addEventListener('load', function(ev) {
-      // Download main.dart.js
-      _flutter.loader.loadEntrypoint({
-        serviceWorker: {
-          serviceWorkerVersion: serviceWorkerVersion,
-        },
-        onEntrypointLoaded: function(engineInitializer) {
-          engineInitializer.initializeEngine().then(function(appRunner) {
-            appRunner.runApp();
-          });
+    window.addEventListener('load', function() {
+      var loading = document.querySelector('.loading');
+      var loadingText = loading.querySelector('span');
+      var dots = '';
+      var loadingInterval = setInterval(function() {
+        dots = dots.length >= 3 ? '' : dots + '.';
+        loadingText.textContent = 'جاري التحميل' + dots;
+      }, 500);
+
+      window._flutter = {
+        loader: {
+          load: async function() {
+            try {
+              const engineInitializer = await import('./flutter.js');
+              const appRunner = await engineInitializer.initializeEngine({
+                renderer: 'html'
+              });
+              await appRunner.runApp();
+            } catch (e) {
+              console.error('Error loading Flutter app:', e);
+              loadingText.textContent = 'حدث خطأ في التحميل. يرجى تحديث الصفحة.';
+            }
+            clearInterval(loadingInterval);
+          }
         }
-      });
+      };
+      
+      window._flutter.loader.load();
     });
   </script>
 </body>
